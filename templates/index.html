@@ -1,0 +1,31 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Chirper</title>
+</head>
+<body>
+    Logged in as {{loginuser}}
+    <button><a href="/login">login</a></button>
+    <div>
+        <h2>Tweets</h2>
+        {% for post in posts %}
+            <div>
+                <h4>{{post.username}}</h4>
+                <p>{{post.tweet}}</p>
+            </div>
+        {% endfor %}
+    </div>
+    <div>
+        <h2>Users</h2>
+        {% for user in users %}
+        <div>
+            <h4>{{user.username}}</h4>
+        </div>
+        {% endfor %}
+    </div>
+    <button><a href="/add">add tweet</a></button>
+    </div>
+</body>
+</html>
