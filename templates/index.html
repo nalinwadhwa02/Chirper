@@ -12,8 +12,8 @@
         <h2>Tweets</h2>
         {% for post in posts %}
             <div>
-                <h4>{{post.username}}</h4>
-                <p>{{post.tweet}}</p>
+                <h4>{{post[0]}}</h4>
+                <p>{{post[1]}}</p>
             </div>
         {% endfor %}
     </div>
@@ -21,7 +21,7 @@
         <h2>Users</h2>
         {% for user in users %}
         <div>
-            <h4>{{user.username}}</h4>
+            <h4>{{user[0]}}</h4>
         </div>
         {% endfor %}
     </div>
