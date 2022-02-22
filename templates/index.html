@@ -9,9 +9,9 @@
 </head>
 <body>
     <div class="container-fluid bg-white">
-        <div class="m-2 row p-2 border rounded-3">
+        <div class="m-3 mt-4 row p-2 border rounded-3">
             <div class="col-sm-3">
-                <h1 class="text-start">Chirper</h1>
+                <h1 class="text-start"><a href="/">Chirper</a></h1>
             </div>
             <div class="col text-center">
                 <input type="text" id="search" name="search" placeholder="search"><button>Search</button>
@@ -26,10 +26,10 @@
         </div>
         <div class="row mt-2 gap-0">
             <div class="col">
-                <div class="container-fluid ms-2 ps-5 pe-5 pt-4 pb-4 text-center border rounded-3">
+                <div class="container-fluid ms-3 ps-5 pe-5 pt-4 pb-4 text-center border rounded-3">
                     <div class="row mb-4">
                         <h2 class="col text-start">Chirps</h2>
-                        <button type="button" onclick="location.href='/add'" class="col-sm-1 btn-primary btn-sm">chirp</button>
+                        <button type="button" onclick="location.href='/add'" class="col-sm-2 btn-primary btn-sm">chirp</button>
                     </div>
                     {% for post in posts %}
                         <div class="row mt-1 mb-1 p-3 text-center border rounded-3">
@@ -43,11 +43,17 @@
                     {% endfor %}
                 </div>
             </div>
-            <div class="col-sm-3 me-2">
+            <div class="col-sm-3 ms-2 me-3">
+                <div class="container-fluid ps-5 pe-5 pt-4 pb-4 mb-3 text-center border rounded-3">
+                    <h2 class="text-start mb-3">Following</h2>
+                        {% for user in users %}
+                            <p class="m-2 text-start"><a href="/user/{{user[1]}}">{{user[0]}}</a></p>
+                        {% endfor %}
+                </div>
                 <div class="container-fluid ps-5 pe-5 pt-4 pb-4 text-center border rounded-3">
                     <h2 class="text-start mb-3">Users</h2>
-                        {% for user in users %}
-                            <p class="m-2 text-start">{{user[0]}}</p>
+                        {% for user in extra %}
+                            <p class="m-2 text-start"><a href="/user/{{user[1]}}">{{user[0]}}</a></p>
                         {% endfor %}
                 </div>
             </div>

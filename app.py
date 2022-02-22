@@ -28,11 +28,22 @@ def get_curr_timestamp():
 
 @app.route('/', methods=["POST", "GET"])
 def home():
-    db.execute("select u.username, t.tweet, t.tweettime from tweets t, users u where u.userid = t.userid order by tweettime desc;")
-    posts = db.fetchall()
-    db.execute("select username from users;")
-    users = db.fetchall()
-    return render_template("index.html", posts=posts, users=users, loginuser=current_login["username"])
+    posts = [[]]
+    users = [[]]
+    extra = [[]]
+    if current_login["userid"] == "undef":
+        db.execute("select u.username, t.tweet, t.tweettime from tweets t, users u where u.userid = t.userid order by tweettime desc;")
+        posts = db.fetchall()
+        db.execute("select username, userid from users;")
+        users = db.fetchall()
+    else:
+        db.execute("select u.username, t.tweet, t.tweettime from tweets t, users u where u.userid = t.userid and u.userid = "+str(current_login["userid"])+" union select u.username, t.tweet, t.tweettime from tweets t, users u, followers f where u.userid = t.userid and f.fe = u.userid order by tweettime desc;")
+        posts = db.fetchall()
+        db.execute("select username, u.userid from users u, followers f where f.fe = u.userid;")
+        users = db.fetchall()
+        db.execute("select username, u.userid from users u, (select userid from users where not userid = "+str(current_login["userid"])+"  except select fe as userid from followers) as diff where diff.userid = u.userid;")
+        extra = db.fetchall()
+    return render_template("index.html", posts=posts, users=users, loginuser=current_login["username"], extra=extra)
 
 @app.route("/login", methods=["POST", "GET"])
 def login():
@@ -44,6 +55,10 @@ def login():
         if(len(users) == 1):
             current_login["username"] = users[0][0]
             current_login["userid"] = users[0][1]
+            db.execute("drop view if exists followers;")
+            conn.commit()
+            db.execute("create view followers as select fe from network where fr = "+ str(current_login["userid"])+";")
+            conn.commit()
     return render_template("login.html")
 
 @app.route("/signup", methods=["POST", "GET"])
@@ -59,9 +74,17 @@ def signup():
 def add():
     if request.method == "POST" and current_login["username"]!= "undef":
         stweet = request.form["tweet"]
-        db.execute("insert into tweets(userid, tweet, tweettime) values("
+        db.execute("insert into tweets(userid, tweet, tweettime, tweettype, referencetweetid) values("
             +str(current_login["userid"])+", '"
             +stweet+"', '"
-            +get_curr_timestamp()+"');")
+            +get_curr_timestamp()+"', 0, NULL);")
         conn.commit()
     return render_template("add.html")
+
+@app.route('/user/<int:userid>', methods=["POST", "GET"])
+def userpage(userid):
+    db.execute("select username from users where userid = "+str(userid)+";")
+    username=db.fetchall()[0][0]
+    db.execute("select u.username, t.tweet, t.tweettime from tweets t, users u where u.userid = t.userid and u.userid = "+str(userid)+" order by tweettime desc;")
+    tweets=db.fetchall()
+    return render_template("user.html", loginuser=current_login["username"], username=username, tweets=tweets)
