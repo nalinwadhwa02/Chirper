@@ -28,7 +28,7 @@ def get_curr_timestamp():
 
 @app.route('/', methods=["POST", "GET"])
 def home():
-    db.execute("select u.username, t.tweet, t.tweettime from tweets t, users u where u.userid = t.userid;")
+    db.execute("select u.username, t.tweet, t.tweettime from tweets t, users u where u.userid = t.userid order by tweettime desc;")
     posts = db.fetchall()
     db.execute("select username from users;")
     users = db.fetchall()

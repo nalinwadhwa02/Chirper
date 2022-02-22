@@ -8,34 +8,49 @@
     <title>Chirper</title>
 </head>
 <body>
-    <div class="row">
-        <div class="col">
-            <h2 class="text-start">Tweets</h2>
-        </div>
-        <div class="col">
-            {% if loginuser == 'undef'%}
-                <p class="text-end"><button><a href="/login">login</a></button></p>
-            {% else %}
-                <p class="text-end">loggin in as <u>{{loginuser}}</u> <button><a href="/login">Switch User</a></button></p>
-            {% endif %}
-        </div>
-    </div>
-    <div class="container">
-        {% for post in posts %}
-            <div class="text-center border">
-                <p class="text-start"><strong>{{post[0]}}</strong><small> {{post[2]}}</small></p>
-                {{post[1]}}
+    <div class="container-fluid bg-white">
+        <div class="m-2 row p-2 border rounded-3">
+            <div class="col-sm-3">
+                <h1 class="text-start">Chirper</h1>
             </div>
-        {% endfor %}
-        <button><a href="/add">add tweet</a></button>
-    </div>
-    <p></p>
-    <div class="container">
-        <h2>Users</h2>
-        <div class="text-center container-sm">
-            {% for user in users %}
-                {{user[0]}}
-            {% endfor %}
+            <div class="col text-center">
+                <input type="text" id="search" name="search" placeholder="search"><button>Search</button>
+            </div>
+            <div class="col-sm-3">
+                {% if loginuser == 'undef'%}
+                    <p class="text-end"><button type="button" onclick="location.href='/login'" class="btn btn-primary btn-sm">login</button></p>
+                {% else %}
+                    <p class="text-end"><button type="button" onclick="location.href='/login'" class="btn btn-primary btn-sm">{{loginuser}}</button></p>
+                {% endif %}
+            </div>
+        </div>
+        <div class="row mt-2 gap-0">
+            <div class="col">
+                <div class="container-fluid ms-2 ps-5 pe-5 pt-4 pb-4 text-center border rounded-3">
+                    <div class="row mb-4">
+                        <h2 class="col text-start">Chirps</h2>
+                        <button type="button" onclick="location.href='/add'" class="col-sm-1 btn-primary btn-sm">chirp</button>
+                    </div>
+                    {% for post in posts %}
+                        <div class="row mt-1 mb-1 p-3 text-center border rounded-3">
+                            <div class="row m-1">
+                                <h5 class="col text-start">{{post[0]}}</h5><p class="col text-end">{{post[2]}}</p>
+                            </div>
+                            <div class="container text-start m-2">
+                                {{post[1]}}
+                            </div>
+                        </div>
+                    {% endfor %}
+                </div>
+            </div>
+            <div class="col-sm-3 me-2">
+                <div class="container-fluid ps-5 pe-5 pt-4 pb-4 text-center border rounded-3">
+                    <h2 class="text-start mb-3">Users</h2>
+                        {% for user in users %}
+                            <p class="m-2 text-start">{{user[0]}}</p>
+                        {% endfor %}
+                </div>
+            </div>
         </div>
     </div>
 </body>
