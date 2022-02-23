@@ -3,22 +3,21 @@ drop table network;
 drop table users;
 
 create table if not exists users (
-    userid text primary key,
-    firstname text not null,
-    lastname text not null,
+    userid serial primary key,
+    username text not null unique,
     password text not null
 );
 
 create table if not exists network (
-    fr text references users (userid),
-    fe text references users (userid)
+    fr serial references users (userid),
+    fe serial references users (userid)
 );
 
 create table if not exists tweets (
     tweetid serial primary key,
-    userid text references users (userid),
+    userid serial references users (userid),
     tweettime timestamp not null,
     tweet text not null,
-    response_tweets text[],
-    in_response_to_tweet text[]
+    response_tweets integer[],
+    in_response_to_tweet integer[]
 );
