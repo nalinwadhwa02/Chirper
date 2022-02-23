@@ -20,5 +20,5 @@ create table if not exists tweets (
     tweettime timestamp not null,
     tweet text not null,
     response_tweets text[],
-    in_response_to_tweet text
+    in_response_to_tweet text[]
 );
