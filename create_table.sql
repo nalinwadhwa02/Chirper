@@ -9,13 +9,13 @@ create table if not exists users (
 );
 
 create table if not exists network (
-    fr serial references users (userid),
-    fe serial references users (userid)
+    fr integer references users (userid),
+    fe integer references users (userid)
 );
 
 create table if not exists tweets (
     tweetid serial primary key,
-    userid serial references users (userid),
+    userid integer references users (userid),
     tweettime timestamp not null,
     tweet text not null,
     response_tweets integer[],
