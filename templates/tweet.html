@@ -36,10 +36,10 @@
                     <div class="container text-start m-2">
                         <h4>{{tweet[3]}}</h4>
                     </div>
-                    <div class="row mb-4 mt-5">
-                        <h4 class="col text-start">Responses</h4>
-                        <button type="button" onclick="location.href='/add'" class="col-sm-2 btn-primary btn-sm">Respond</button>
-                    </div>
+                    <h4 class="col text-start">Responses</h4>
+                    <form class="input-group mb-3 mt-3" method="POST">
+                        <input type="text" class="form-control" placeholder="Add a new Chirp" name="addresponse" id="addresponse">
+                    </form>
                     {% for post in posts %}
                         <div class="card row mt-1 mb-1 p-3 text-center border rounded-3">
                             <a class="stretched-link" href="/tweet/{{post[4]}}"></a>

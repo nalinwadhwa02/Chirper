@@ -27,10 +27,10 @@
         <div class="row mt-2 gap-0">
             <div class="col-sm-8">
                 <div class="container-fluid ms-3 ps-5 pe-5 pt-4 pb-4 text-center border rounded-3">
-                    <div class="row mb-4">
-                        <h2 class="col text-start">Chirps</h2>
-                        <button type="button" onclick="location.href='/add'" class="col-sm-2 btn-primary btn-sm">chirp</button>
-                    </div>
+                    <h2 class="col text-start">Chirps</h2>
+                    <form class="input-group mb-3 mt-3" method="POST">
+                        <input type="text" class="form-control" placeholder="Add a new Chirp" name="addchirp" id="addchirp">
+                    </form>
                     {% for post in posts %}
                         <div class="card row mt-1 mb-1 p-3 text-center border rounded-3">
                             <a class="stretched-link" href="/tweet/{{post[4]}}"></a>
