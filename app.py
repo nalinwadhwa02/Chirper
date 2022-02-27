@@ -88,7 +88,7 @@ def login():
             current_login["userid"] = users[0][1]
             db.execute("drop view if exists followers;")
             conn.commit()
-            db.execute("create view followers as select fe from network where fr = "+ str(current_login["userid"])+";")
+            db.execute("create view followers as select * from network where fr = "+ str(current_login["userid"])+" with cascaded check option;")
             conn.commit()
     return render_template("login.html")
 
@@ -118,7 +118,19 @@ def userpage(userid):
     username=db.fetchall()[0][0]
     db.execute("select u.username, t.tweet, t.tweettime, t.tweetid from tweets t, users u where u.userid = t.userid and u.userid = "+str(userid)+" order by tweettime desc;")
     tweets=db.fetchall()
-    return render_template("user.html", loginuser=[current_login['userid'],current_login["username"]], user=[username,userid], tweets=tweets)
+    isfollowing = False
+    if(current_login["userid"] != 'undef'):
+        db.execute("select fe from followers where fe = "+str(userid)+";")
+        nid = db.fetchall()
+        print(nid)
+        if(len(nid)>0):
+            isfollowing = True
+    if request.method == "POST":
+        if 'followbutton' in request.form:
+            db.execute("insert into followers values("+str(current_login["userid"])+","+str(userid)+");")
+            conn.commit()
+            return redirect(url_for('userpage', userid=userid))
+    return render_template("user.html", loginuser=[current_login['userid'],current_login["username"]], user=[userid, username], tweets=tweets, isfollowing=isfollowing)
 
 @app.route('/tweet/<int:tweetid>', methods=["POST", "GET"])
 def tweetpage(tweetid):

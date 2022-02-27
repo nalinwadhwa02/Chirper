@@ -58,9 +58,10 @@
             <div class="col-sm-3">
                 <h1 class="text-start"><a href="/">Chirper</a></h1>
             </div>
-            <div class="col text-center">
-                <input type="text" id="search" name="search" placeholder="search"><button>Search</button>
-            </div>
+            <form class="col input-group mb-3 mt-3" method="POST">
+                <input type="text" class="form-control" placeholder="Search for a Chirp or User" name="search" id="search">
+                <button type="submit" class="btn btn-primary" name="searchbutton" value="pressed" id="searchbutton">Search</button>
+            </form>
             <div class="col-sm-3">
                 {% if loginuser[1] == 'undef'%}
                     <p class="text-end"><button type="button" onclick="location.href='/login'" class="btn btn-primary btn-sm">login</button></p>
@@ -73,18 +74,20 @@
             <div class="col-sm-8">
                 <div class="container-fluid ms-3 ps-5 pe-5 pt-4 pb-4 text-center border rounded-3">
                     <div class="row mb-3">
-                        <h2 class="col text-start">{{user[0]}}</h2>
-                        {% if loginuser == 'undef' %}
-                            <button onclick="location.href='/login'" class="col-sm-2 btn btn-primary btn-sm">Follow</button>
-                        {% elif loginuser != username %}
-                            <button class="col-sm-2 btn btn-primary btn-sm">Follow</button>
+                        <h2 class="col text-start">{{user[1]}}</h2>
+                        {% if loginuser[0] == 'undef' %}
+                            <form method="POST" class="col-sm-2"><button onclick="location.href='/login'" class="col-sm-2 btn btn-primary btn-sm">Follow</button></form>
+                        {% elif isfollowing == true %}
+                            <form method="POST" class="col-sm-2"><button class="btn btn-primary disabled">Following</button></form>
+                        {% elif loginuser[1] != user[1] %}
+                            <form method="POST" class="col-sm-2"><button type="submit" class="btn btn-primary btn" name="followbutton" value="pressed">Follow</button></form>
                         {% endif %}
                     </div>
                     {% for tweet in tweets%}
                         <div class="card row mt-1 mb-1 p-3 text-center border rounded-3">
                             <a class="stretched-link" href="/tweet/{{tweet[3]}}"></a>
                             <div class="row m-1">
-                                <h5 class="col text-start"><a href="/user/{{user[1]}}">{{tweet[0]}}</a></h5><p class="col text-end">{{tweet[2]}}</p>
+                                <h5 class="col text-start"><a href="/user/{{user[0]}}">{{tweet[0]}}</a></h5><p class="col text-end">{{tweet[2]}}</p>
                             </div>
                             <div class="container text-start m-2">
                                 {{tweet[1]}}
