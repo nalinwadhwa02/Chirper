@@ -56,7 +56,7 @@
     <div class="container-fluid bg-white">
         <div class="m-3 mt-4 row p-2 border rounded-3">
             <div class="col-sm-3">
-                <h1 class="text-start"><a href="/">Chirper</a></h1>
+                <h1 class="text-start mt-1"><a href="/">Chirper</a></h1>
             </div>
             <form class="col input-group mb-3 mt-3" method="POST">
                 <input type="text" class="form-control" placeholder="Search for a Chirp or User" name="search" id="search">
@@ -76,7 +76,7 @@
                     <div class="row mb-3">
                         <h2 class="col text-start">{{user[1]}}</h2>
                         {% if loginuser[0] == 'undef' %}
-                            <form method="POST" class="col-sm-2"><button onclick="location.href='/login'" class="col-sm-2 btn btn-primary btn-sm">Follow</button></form>
+                            <form method="POST" class="col-sm-2"><button onclick="location.href='/login'" class="btn btn-primary btn-sm">Follow</button></form>
                         {% elif isfollowing == true %}
                             <form method="POST" class="col-sm-2"><button class="btn btn-primary disabled">Following</button></form>
                         {% elif loginuser[1] != user[1] %}
