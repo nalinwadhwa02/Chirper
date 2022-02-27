@@ -101,17 +101,6 @@ def signup():
         conn.commit()
     return render_template("signup.html")
 
-@app.route('/add', methods=["POST", "GET"])
-def add():
-    if request.method == "POST" and current_login["username"]!= "undef":
-        stweet = request.form["tweet"]
-        db.execute("insert into tweets(userid, tweet, tweettime, response_tweets, in_response_to_tweet) values("
-            +str(current_login["userid"])+", '"
-            +stweet+"', '"
-            +get_curr_timestamp()+"', array[]::integer[], array[]::integer[]);")
-        conn.commit()
-    return render_template("add.html")
-
 @app.route('/user/<int:userid>', methods=["POST", "GET"])
 def userpage(userid):
     db.execute("select username from users where userid = "+str(userid)+";")
@@ -126,6 +115,8 @@ def userpage(userid):
         if(len(nid)>0):
             isfollowing = True
     if request.method == "POST":
+        if 'searchbutton' in request.form and len(request.form.get('search'))>0:
+            return redirect(url_for('search', searchquery=request.form.get('search')))
         if 'followbutton' in request.form:
             db.execute("insert into followers values("+str(current_login["userid"])+","+str(userid)+");")
             conn.commit()
@@ -141,21 +132,24 @@ def tweetpage(tweetid):
         db.execute("select u.username, t.tweet, t.tweettime, u.userid, t.tweetid from tweets t, users u where u.userid = t.userid and t.tweetid = any(array"+str(tweet[6])+") order by tweettime desc fetch first 50 rows only;")
         posts=db.fetchall()
     if request.method == "POST":
-        if(current_login["userid"] == 'undef'):
-            return redirect(url_for("login"))
-        else:
-            print("adding "+request.form.get('addresponse'))
-            db.execute("insert into tweets(userid, tweet, tweettime, response_tweets, in_response_to_tweet) values("
-                +str(current_login["userid"])+", '"
-                +request.form.get('addresponse')+"', '"
-                +get_curr_timestamp()+"', array[]::integer[], array["+str(tweet[2])+"]) returning tweetid;")
-            newtweetid = db.fetchall()[0][0]
-            print(newtweetid)
-            db.execute("update tweets set response_tweets = response_tweets || "+str(newtweetid)+" where tweetid = "+str(tweet[2])+"")
-            conn.commit()
-            db.execute("select u.userid, u.username, t.tweetid, t.tweet, t.tweettime, t.in_response_to_tweet, t.response_tweets from tweets t, users u where u.userid = t.userid and t.tweetid = "+str(tweetid)+";")
-            tweet = db.fetchall()[0]
-            db.execute("select u.username, t.tweet, t.tweettime, u.userid, t.tweetid from tweets t, users u where u.userid = t.userid and t.tweetid = any(array"+str(tweet[6])+") order by tweettime desc fetch first 50 rows only;")
-            posts=db.fetchall()
-            return render_template("tweet.html", tweet=tweet, loginuser=[current_login["userid"],current_login["username"]], posts=posts)
+        if 'searchbutton' in request.form and len(request.form.get('search'))>0:
+            return redirect(url_for('search', searchquery=request.form.get('search')))
+        elif 'responsebutton' in request.form and len(request.form.get('addresponse'))>0:
+            if(current_login["userid"] == 'undef'):
+                return redirect(url_for("login"))
+            else:
+                print("adding "+request.form.get('addresponse'))
+                db.execute("insert into tweets(userid, tweet, tweettime, response_tweets, in_response_to_tweet) values("
+                    +str(current_login["userid"])+", '"
+                    +request.form.get('addresponse')+"', '"
+                    +get_curr_timestamp()+"', array[]::integer[], array["+str(tweet[2])+"]) returning tweetid;")
+                newtweetid = db.fetchall()[0][0]
+                print(newtweetid)
+                db.execute("update tweets set response_tweets = response_tweets || "+str(newtweetid)+" where tweetid = "+str(tweet[2])+"")
+                conn.commit()
+                db.execute("select u.userid, u.username, t.tweetid, t.tweet, t.tweettime, t.in_response_to_tweet, t.response_tweets from tweets t, users u where u.userid = t.userid and t.tweetid = "+str(tweetid)+";")
+                tweet = db.fetchall()[0]
+                db.execute("select u.username, t.tweet, t.tweettime, u.userid, t.tweetid from tweets t, users u where u.userid = t.userid and t.tweetid = any(array"+str(tweet[6])+") order by tweettime desc fetch first 50 rows only;")
+                posts=db.fetchall()
+                return render_template("tweet.html", tweet=tweet, loginuser=[current_login["userid"],current_login["username"]], posts=posts)
     return render_template("tweet.html", tweet=tweet, loginuser=[current_login["userid"],current_login["username"]], posts=posts)

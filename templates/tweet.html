@@ -13,9 +13,10 @@
             <div class="col-sm-3">
                 <h1 class="text-start"><a href="/">Chirper</a></h1>
             </div>
-            <div class="col text-center">
-                <input type="text" id="search" name="search" placeholder="search"><button>Search</button>
-            </div>
+            <form class="col input-group mb-3 mt-3" method="POST">
+                <input type="text" class="form-control" placeholder="Search for a Chirp or User" name="search" id="search">
+                <button type="submit" class="btn btn-primary" name="searchbutton" value="pressed" id="searchbutton">Search</button>
+            </form>
             <div class="col-sm-3">
                 {% if loginuser[1] == 'undef'%}
                     <p class="text-end"><button type="button" onclick="location.href='/login'" class="btn btn-primary btn-sm">login</button></p>
@@ -39,6 +40,7 @@
                     <h4 class="mt-5 text-start">Responses</h4>
                     <form class="input-group mb-3 mt-3" method="POST">
                         <input type="text" class="form-control" placeholder="Add a new Response" name="addresponse" id="addresponse">
+                        <button type="submit" value="pressed" name="responsebutton" class="btn btn-primary">Respond</button>
                     </form>
                     {% for post in posts %}
                         <div class="card row mt-1 mb-1 p-3 text-center border rounded-3">
