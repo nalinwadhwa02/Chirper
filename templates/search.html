@@ -14,7 +14,7 @@
                 <h1 class="text-start"><a href="/">Chirper</a></h1>
             </div>
             <form class="col input-group mb-3 mt-3" method="POST">
-                <input type="text" class="form-control" placeholder="Search for a Chirp or User" name="search" id="search">
+                <input type="text" class="form-control" placeholder="Search for a chirp" name="search" id="search" value={{searchquery}}>
                 <button type="submit" class="btn btn-primary" name="searchbutton" value="pressed" id="searchbutton">Search</button>
             </form>
             <div class="col-sm-3">
@@ -28,35 +28,25 @@
         <div class="row mt-2 gap-0">
             <div class="col-sm-8">
                 <div class="container-fluid ms-3 ps-5 pe-5 pt-4 pb-4 text-center border rounded-3">
-                    <h2 class="col text-start">Chirps</h2>
-                    <form class="input-group mb-3 mt-3" method="POST">
-                        <input type="text" class="form-control" placeholder="Add a new Chirp" name="addchirp" id="addchirp">
-                        <button type="submit" class="btn btn-primary" name="addchirpbutton" value="pressed">Chrip</button>
-                    </form>
-                    {% for post in posts %}
+                    <h2 class="col text-start">Chirps Results</h2>
+                    {% for post in results %}
                         <div class="card row mt-1 mb-1 p-3 text-center border rounded-3">
-                            <a class="stretched-link" href="/tweet/{{post[4]}}"></a>
+                            <a class="stretched-link" href="/tweet/{{post[1]}}"></a>
                             <div class="row m-1">
-                                <h5 class="col text-start"><a href="/user/{{post[3]}}">{{post[0]}}</a></h5><p class="col text-end">{{post[2]}}</p>
+                                <h5 class="col text-start"><a href="/user/{{post[0]}}">{{post[2]}}</a></h5><p class="col text-end">{{post[4]}}</p>
                             </div>
                             <div class="container text-start m-2">
-                                {{post[1]}}
+                                {{post[3]}}
                             </div>
                         </div>
                     {% endfor %}
                 </div>
             </div>
             <div class="col-sm-3 ms-2 me-3">
-                <div class="container-fluid ps-5 pe-5 pt-4 pb-4 mb-3 text-center border rounded-3">
-                    <h2 class="text-start mb-3">Following</h2>
-                        {% for user in users %}
-                            <p class="m-2 text-start"><a href="/user/{{user[1]}}">{{user[0]}}</a></p>
-                        {% endfor %}
-                </div>
                 <div class="container-fluid ps-5 pe-5 pt-4 pb-4 text-center border rounded-3">
-                    <h2 class="text-start mb-3">Users</h2>
-                        {% for user in extra %}
-                            <p class="m-2 text-start"><a href="/user/{{user[1]}}">{{user[0]}}</a></p>
+                    <h2 class="text-start mb-3">Users Results</h2>
+                        {% for user in userresults %}
+                            <p class="m-2 text-start"><a href="/user/{{user[0]}}">{{user[1]}}</a></p>
                         {% endfor %}
                 </div>
             </div>

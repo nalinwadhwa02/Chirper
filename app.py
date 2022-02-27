@@ -45,23 +45,36 @@ def home():
         db.execute("select username, u.userid from users u, (select userid from users where not userid = "+str(current_login["userid"])+"  except select fe as userid from followers) as diff where diff.userid = u.userid fetch first 50 rows only;")
         extra = db.fetchall()
     if request.method == "POST":
-        if(current_login["userid"] == 'undef'):
-            return redirect(url_for("login"))
-        else:
-            print("adding "+request.form.get('addchirp'))
-            db.execute("insert into tweets(userid, tweet, tweettime, response_tweets, in_response_to_tweet) values("
-                +str(current_login["userid"])+", '"
-                +request.form.get('addchirp')+"', '"
-                +get_curr_timestamp()+"', array[]::integer[], array[]::integer[]);")
-            conn.commit()
-            db.execute("select u.username, t.tweet, t.tweettime, u.userid, t.tweetid from tweets t, users u where u.userid = t.userid and u.userid = "+str(current_login["userid"])+" union select u.username, t.tweet, t.tweettime, u.userid, t.tweetid from tweets t, users u, followers f where u.userid = t.userid and f.fe = u.userid order by tweettime desc fetch first 50 rows only;")
-            posts = db.fetchall()
-            db.execute("select username, u.userid from users u, followers f where f.fe = u.userid fetch first 50 rows only;")
-            users = db.fetchall()
-            db.execute("select username, u.userid from users u, (select userid from users where not userid = "+str(current_login["userid"])+"  except select fe as userid from followers) as diff where diff.userid = u.userid fetch first 50 rows only;")
-            extra = db.fetchall()
-            return render_template("index.html", posts=posts, users=users, loginuser=[current_login["userid"],current_login["username"]], extra=extra)
+        if 'addchirpbutton' in request.form:
+            if(current_login["userid"] == 'undef'):
+                return redirect(url_for("login"))
+            else:
+                db.execute("insert into tweets(userid, tweet, tweettime, response_tweets, in_response_to_tweet) values("
+                    +str(current_login["userid"])+", '"
+                    +request.form.get('addchirp')+"', '"
+                    +get_curr_timestamp()+"', array[]::integer[], array[]::integer[]);")
+                conn.commit()
+                db.execute("select u.username, t.tweet, t.tweettime, u.userid, t.tweetid from tweets t, users u where u.userid = t.userid and u.userid = "+str(current_login["userid"])+" union select u.username, t.tweet, t.tweettime, u.userid, t.tweetid from tweets t, users u, followers f where u.userid = t.userid and f.fe = u.userid order by tweettime desc fetch first 50 rows only;")
+                posts = db.fetchall()
+                db.execute("select username, u.userid from users u, followers f where f.fe = u.userid fetch first 50 rows only;")
+                users = db.fetchall()
+                db.execute("select username, u.userid from users u, (select userid from users where not userid = "+str(current_login["userid"])+"  except select fe as userid from followers) as diff where diff.userid = u.userid fetch first 50 rows only;")
+                extra = db.fetchall()
+                return render_template("index.html", posts=posts, users=users, loginuser=[current_login["userid"],current_login["username"]], extra=extra)
+        if 'searchbutton' in request.form and len(request.form.get('search'))>0:
+            return redirect(url_for('search', searchquery=request.form.get('search')))
     return render_template("index.html", posts=posts, users=users, loginuser=[current_login["userid"],current_login["username"]], extra=extra)
+
+@app.route("/search/<string:searchquery>", methods=["POST", "GET"])
+def search(searchquery):
+    db.execute("select u.userid, t.tweetid, u.username, t.tweet, t.tweettime from tweets t, users u where u.userid = t.userid and tweet like '%"+searchquery+"%' order by tweettime desc fetch first 50 rows only;")
+    tweetresults = db.fetchall()
+    db.execute("select userid, username from users where username like '%"+searchquery+"%' fetch first 50 rows only;")
+    userresults = db.fetchall()
+    if request.method == "POST":
+        if 'searchbutton' in request.form and len(request.form.get('search'))>0:
+            return redirect(url_for('search', searchquery=request.form.get('search')))
+    return render_template("search.html", results=tweetresults, userresults=userresults, searchquery=searchquery, loginuser=[current_login["userid"],current_login["username"]])
 
 @app.route("/login", methods=["POST", "GET"])
 def login():
@@ -103,9 +116,9 @@ def add():
 def userpage(userid):
     db.execute("select username from users where userid = "+str(userid)+";")
     username=db.fetchall()[0][0]
-    db.execute("select u.username, t.tweet, t.tweettime from tweets t, users u where u.userid = t.userid and u.userid = "+str(userid)+" order by tweettime desc;")
+    db.execute("select u.username, t.tweet, t.tweettime, t.tweetid from tweets t, users u where u.userid = t.userid and u.userid = "+str(userid)+" order by tweettime desc;")
     tweets=db.fetchall()
-    return render_template("user.html", loginuser=current_login["username"], username=username, tweets=tweets)
+    return render_template("user.html", loginuser=[current_login['userid'],current_login["username"]], user=[username,userid], tweets=tweets)
 
 @app.route('/tweet/<int:tweetid>', methods=["POST", "GET"])
 def tweetpage(tweetid):
