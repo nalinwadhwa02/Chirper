@@ -22,10 +22,10 @@
             <nav class="flex-col text-end mt-2 mt-md-0 ms-md-auto">
                 <form class="text-end" method="POST">
                 {% if loginuser[1] == 'undef'%}
-                <button type="submit" class="btn btn-primary btn-sm">login</button>
+                <button type="submit" class="btn btn-primary btn-sm" name="login" value="pressed">login</button>
                 {% else %}
-                <button type="submit" class="btn btn-primary btn-sm">{{loginuser[1]}}</button>
-                <button type="submit" class="btn btn-primary btn-sm">logout</button>
+                <button type="submit" class="btn btn-primary btn-sm" onclick="location.href='/user/{{loginuser[0]}}'">{{loginuser[1]}}</button>
+                <button type="submit" class="btn btn-primary btn-sm" name="logout" value="pressed">logout</button>
                 {% endif %}
                 </form>
             </nav>

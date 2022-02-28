@@ -1,5 +1,4 @@
 from imp import reload
-import os
 from flask import Flask, redirect, url_for
 from flask import render_template, request
 import psycopg2
@@ -29,14 +28,14 @@ def get_curr_timestamp():
     return str(ts.year)+"-"+str(ts.month)+"-"+str(ts.day)+" "+str(ts.hour)+":"+str(ts.minute)+":"+str(ts.second)
 
 
-def buttonhandler(request, userid = None):
-    if 'addchirpbutton' in request.form:
+def buttonhandler(form, userid = None):
+    if 'addchirpbutton' in form:
         if(current_login["userid"] == 'undef'):
             return redirect(url_for("login"))
         else:
             db.execute("insert into tweets(userid, tweet, tweettime, response_tweets, in_response_to_tweet) values("
                 +str(current_login["userid"])+", '"
-                +request.form.get('addchirp')+"', '"
+                +form.get('addchirp')+"', '"
                 +get_curr_timestamp()+"', array[]::integer[], array[]::integer[]);")
             conn.commit()
             db.execute("select u.username, t.tweet, t.tweettime, u.userid, t.tweetid from tweets t, users u where u.userid = t.userid and u.userid = "+str(current_login["userid"])+" union select u.username, t.tweet, t.tweettime, u.userid, t.tweetid from tweets t, users u, followers f where u.userid = t.userid and f.fe = u.userid order by tweettime desc fetch first 50 rows only;")
@@ -47,22 +46,22 @@ def buttonhandler(request, userid = None):
             extra = db.fetchall()
             return render_template("index.html", posts=posts, users=users, loginuser=[current_login["userid"],current_login["username"]], extra=extra)
 
-    elif 'searchbutton' in request.form and len(request.form.get('search'))>0:
-        return redirect(url_for('search', searchquery=request.form.get('search')))
+    elif 'searchbutton' in form and len(form['search'])>0:
+        print("searching")
+        return redirect(url_for('search', searchquery=form.get('search')))
 
-    elif 'followbutton' in request.form:
+    elif 'followbutton' in form:
         db.execute("insert into followers values("+str(current_login["userid"])+","+str(userid)+");")
         conn.commit()
         return redirect(url_for('userpage', userid=userid))
 
-    elif 'responsebutton' in request.form and len(request.form.get('addresponse'))>0:
+    elif 'responsebutton' in form and len(form.get('addresponse'))>0:
         if(current_login["userid"] == 'undef'):
             return redirect(url_for("login"))
         else:
-            print("adding "+request.form.get('addresponse'))
             db.execute("insert into tweets(userid, tweet, tweettime, response_tweets, in_response_to_tweet) values("
                 +str(current_login["userid"])+", '"
-                +request.form.get('addresponse')+"', '"
+                +form.get('addresponse')+"', '"
                 +get_curr_timestamp()+"', array[]::integer[], array["+str(tweet[2])+"]) returning tweetid;")
             newtweetid = db.fetchall()[0][0]
             print(newtweetid)
@@ -73,6 +72,13 @@ def buttonhandler(request, userid = None):
             db.execute("select u.username, t.tweet, t.tweettime, u.userid, t.tweetid from tweets t, users u where u.userid = t.userid and t.tweetid = any(array"+str(tweet[6])+") order by tweettime desc fetch first 50 rows only;")
             posts=db.fetchall()
             return render_template("tweet.html", tweet=tweet, loginuser=[current_login["userid"],current_login["username"]], posts=posts)
+    
+    elif 'login' in form:
+        return redirect(url_for('login'))
+    elif 'logout' in form:
+         logout()
+         return redirect(url_for('home'))
+    
 
 
 @app.route('/', methods=["POST", "GET"])
@@ -93,7 +99,9 @@ def home():
         db.execute("select username, u.userid from users u, (select userid from users where not userid = "+str(current_login["userid"])+"  except select fe as userid from followers) as diff where diff.userid = u.userid fetch first 50 rows only;")
         extra = db.fetchall()
     if request.method == "POST":
-        buttonhandler(request)
+        rval = buttonhandler(request.form)
+        if rval!=None:
+            return rval
     return render_template("index.html", posts=posts, users=users, loginuser=[current_login["userid"],current_login["username"]], extra=extra)
 
 
@@ -104,7 +112,11 @@ def search(searchquery):
     db.execute("select userid, username from users where username like '%"+searchquery+"%' fetch first 50 rows only;")
     userresults = db.fetchall()
     if request.method == "POST":
-        buttonhandler(request)
+        
+        rval = buttonhandler(request.form)
+        if rval!=None:
+            return rval
+
     return render_template("search.html", results=tweetresults, userresults=userresults, searchquery=searchquery, loginuser=[current_login["userid"],current_login["username"]])
 
 
@@ -149,7 +161,9 @@ def userpage(userid):
         if(len(nid)>0):
             isfollowing = True
     if request.method == "POST":
-        buttonhandler(request, userid=userid)
+        rval = buttonhandler(request.form, userid=userid)
+        if rval != None:
+            return rval
     return render_template("user.html", loginuser=[current_login['userid'],current_login["username"]], user=[userid, username], tweets=tweets, isfollowing=isfollowing)
 
 
@@ -169,5 +183,7 @@ def tweetpage(tweetid):
         db.execute("select u.username, t.tweet, t.tweettime, u.userid, t.tweetid from tweets t, users u where u.userid = t.userid and t.tweetid = any(array"+str(tweet[6])+") order by tweettime desc fetch first 50 rows only;")
         posts=db.fetchall()
     if request.method == "POST":
-        buttonhandler(request)
+        rval = buttonhandler(request.form)
+        if rval != None:
+            return rval
     return render_template("tweet.html", tweet=tweet, loginuser=[current_login["userid"],current_login["username"]], posts=posts)
