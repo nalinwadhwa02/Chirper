@@ -9,6 +9,7 @@ import datetime
 
 app = Flask(__name__)
 
+
 conn = psycopg2.connect(
     host="localhost",
     database="postgres",
@@ -26,6 +27,7 @@ current_login = {
 def get_curr_timestamp():
     ts = datetime.datetime.now()
     return str(ts.year)+"-"+str(ts.month)+"-"+str(ts.day)+" "+str(ts.hour)+":"+str(ts.minute)+":"+str(ts.second)
+
 
 @app.route('/', methods=["POST", "GET"])
 def home():
@@ -65,6 +67,7 @@ def home():
             return redirect(url_for('search', searchquery=request.form.get('search')))
     return render_template("index.html", posts=posts, users=users, loginuser=[current_login["userid"],current_login["username"]], extra=extra)
 
+
 @app.route("/search/<string:searchquery>", methods=["POST", "GET"])
 def search(searchquery):
     db.execute("select u.userid, t.tweetid, u.username, t.tweet, t.tweettime from tweets t, users u where u.userid = t.userid and tweet like '%"+searchquery+"%' order by tweettime desc fetch first 50 rows only;")
@@ -75,6 +78,7 @@ def search(searchquery):
         if 'searchbutton' in request.form and len(request.form.get('search'))>0:
             return redirect(url_for('search', searchquery=request.form.get('search')))
     return render_template("search.html", results=tweetresults, userresults=userresults, searchquery=searchquery, loginuser=[current_login["userid"],current_login["username"]])
+
 
 @app.route("/login", methods=["POST", "GET"])
 def login():
@@ -92,6 +96,7 @@ def login():
             conn.commit()
     return render_template("login.html")
 
+
 @app.route("/signup", methods=["POST", "GET"])
 def signup():
     if request.method == "POST":
@@ -100,6 +105,7 @@ def signup():
         db.execute("insert into users(username, password) values('"+newusername+"','"+newpassword+"');")
         conn.commit()
     return render_template("signup.html")
+
 
 @app.route('/user/<int:userid>', methods=["POST", "GET"])
 def userpage(userid):
