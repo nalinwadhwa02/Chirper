@@ -24,7 +24,7 @@
                 {% if loginuser[1] == 'undef'%}
                 <button type="submit" class="btn btn-primary btn-sm" name="login" value="pressed">login</button>
                 {% else %}
-                <button type="submit" class="btn btn-primary btn-sm" onclick="location.href='/user/{{loginuser[0]}}'">{{loginuser[1]}}</button>
+                <button type="submit" class="btn btn-primary btn-sm" name="profilebutton" value="pressed">{{loginuser[1]}}</button>
                 <button type="submit" class="btn btn-primary btn-sm" name="logout" value="pressed">logout</button>
                 {% endif %}
                 </form>

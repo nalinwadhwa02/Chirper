@@ -37,7 +37,7 @@
                         <div class="flex-col text-start fs-3"><button type="button" onclick="location.href='/user/{{user[0]}}'" class="btn btn-link fs-2">{{user[1]}}</button></div>
                         <nav class="flex-col text-end mt-2 mt-md-0 ms-md-auto">
                             <form class="text-end" method="POST">
-                                {% if isfollowing == 'true' %}
+                                {% if isfollowing == true %}
                                 <button type="submit" class="btn btn-primary disabled">Following</button>
                                 {% elif loginuser[0] != user[0] %}
                                 <button type="submit" name="followbutton" value="pressed" class="btn btn-primary">follow</button>
