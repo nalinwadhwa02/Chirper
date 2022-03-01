@@ -30,8 +30,8 @@ current_login = {
 
 db.execute("select setval('users_userid_seq',(select max(userid) from users));")
 db.execute("select setval('tweets_tweetid_seq',(select max(tweetid) from tweets));")
-db.execute("drop view if exists like_nums")
-db.execute("create view like_nums as select tweetid, count(tweetid) as like_num from likes group by tweetid;")
+db.execute("drop table if exists like_nums")
+db.execute("create table like_nums as select t.tweetid, count(l.tweetid) as like_num from likes l right join tweets t on t.tweetid = l.tweetid group by t.tweetid;")
 conn.commit()
 
 def get_curr_timestamp():
@@ -47,7 +47,9 @@ def buttonhandler(form, userid = None, tweetid=None, tweet=None, calledfrom=None
             db.execute("insert into tweets(userid, tweet, tweettime, response_tweets, in_response_to_tweet) values("
                 +str(current_login["userid"])+", '"
                 +form.get('addchirp')+"', '"
-                +get_curr_timestamp()+"', array[]::integer[], array[]::integer[]);")
+                +get_curr_timestamp()+"', array[]::integer[], array[]::integer[]) returning tweetid;")
+            ntweetid = db.fetchall()[0][0]
+            db.execute("insert into like_nums values("+str(ntweetid)+", 0);")
             conn.commit()
             return redirect(url_for('home'))
 
@@ -81,6 +83,7 @@ def buttonhandler(form, userid = None, tweetid=None, tweet=None, calledfrom=None
                 +form.get('addresponse')+"', '"
                 +get_curr_timestamp()+"', array[]::integer[], array["+str(tweet[2])+"]) returning tweetid;")
             newtweetid = db.fetchall()
+            db.execute("insert into like_nums values("+str(newtweetid[0][0])+", 0);")
             conn.commit()
             db.execute("update tweets set response_tweets = response_tweets || "+str(newtweetid[0][0])+" where tweetid = "+str(tweet[2])+";")
             conn.commit()
@@ -146,8 +149,7 @@ def buttonhandler(form, userid = None, tweetid=None, tweet=None, calledfrom=None
         else:
             db.execute("insert into userlikes values("+str(form['likebutton'])+","+str(current_login["userid"])+");")
             conn.commit()
-            db.execute("drop view if exists like_nums")
-            db.execute("create view like_nums as select tweetid, count(tweetid) as like_num from likes group by tweetid;")
+            db.execute("update like_nums set like_num = like_num + 1 where tweetid = "+str(form['likebutton'])+";")
             conn.commit()
             if calledfrom == 'home':
                 return redirect(url_for('home'))
@@ -159,8 +161,7 @@ def buttonhandler(form, userid = None, tweetid=None, tweet=None, calledfrom=None
     elif 'likedbutton' in form:
         db.execute("delete from userlikes where tweetid = "+str(form['likedbutton'])+" and userid = "+str(current_login["userid"])+";")
         conn.commit()
-        db.execute("drop view if exists like_nums")
-        db.execute("create view like_nums as select tweetid, count(tweetid) as like_num from likes group by tweetid;")
+        db.execute("update like_nums set like_num = like_num - 1 where tweetid = "+str(form['likedbutton'])+";")
         conn.commit()
         if calledfrom == 'home':
             return redirect(url_for('home'))
