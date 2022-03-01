@@ -1,7 +1,3 @@
-drop table tweets;
-drop table network;
-drop table users;
-
 create table if not exists users (
     userid serial primary key,
     username text not null unique,
@@ -20,4 +16,9 @@ create table if not exists tweets (
     tweet text not null,
     response_tweets integer[],
     in_response_to_tweet integer[]
+);
+
+create table if not exists likes (
+    tweetid integer references tweets(tweetid),
+    userid integer references users(userid)
 );

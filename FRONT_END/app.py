@@ -29,6 +29,8 @@ current_login = {
 
 db.execute("select setval('users_userid_seq',(select max(userid) from users));")
 db.execute("select setval('tweets_tweetid_seq',(select max(tweetid) from tweets));")
+db.execute("drop table if exists like_nums")
+db.execute("create table like_nums as select t.tweetid, count(l.tweetid) as like_num from likes l right join tweets t on t.tweetid = l.tweetid group by t.tweetid;")
 conn.commit()
 
 def get_curr_timestamp():
@@ -36,7 +38,7 @@ def get_curr_timestamp():
     return str(ts.year)+"-"+str(ts.month)+"-"+str(ts.day)+" "+str(ts.hour)+":"+str(ts.minute)+":"+str(ts.second)
 
 
-def buttonhandler(form, userid = None, tweetid=None, tweet=None):
+def buttonhandler(form, userid = None, tweetid=None, tweet=None, calledfrom=None):
     if 'addchirpbutton' in form:
         if(current_login["userid"] == 'undef'):
             return redirect(url_for("login"))
@@ -44,7 +46,9 @@ def buttonhandler(form, userid = None, tweetid=None, tweet=None):
             db.execute("insert into tweets(userid, tweet, tweettime, response_tweets, in_response_to_tweet) values("
                 +str(current_login["userid"])+", '"
                 +form.get('addchirp')+"', '"
-                +get_curr_timestamp()+"', array[]::integer[], array[]::integer[]);")
+                +get_curr_timestamp()+"', array[]::integer[], array[]::integer[]) returning tweetid;")
+            ntweetid = db.fetchall()[0][0]
+            db.execute("insert into like_nums values("+str(ntweetid)+", 0);")
             conn.commit()
             return redirect(url_for('home'))
 
@@ -78,6 +82,7 @@ def buttonhandler(form, userid = None, tweetid=None, tweet=None):
                 +form.get('addresponse')+"', '"
                 +get_curr_timestamp()+"', array[]::integer[], array["+str(tweet[2])+"]) returning tweetid;")
             newtweetid = db.fetchall()
+            db.execute("insert into like_nums values("+str(newtweetid[0][0])+", 0);")
             conn.commit()
             db.execute("update tweets set response_tweets = response_tweets || "+str(newtweetid[0][0])+" where tweetid = "+str(tweet[2])+";")
             conn.commit()
@@ -101,7 +106,11 @@ def buttonhandler(form, userid = None, tweetid=None, tweet=None):
             current_login['username'] = username
             db.execute('drop view if exists followers;')
             conn.commit()
+            db.execute('drop view if exists userlikes;')
+            conn.commit()
             db.execute("create view followers as select fr, fe from network where fr = "+str(current_login["userid"])+";")
+            conn.commit()
+            db.execute("create view userlikes as select tweetid, userid from likes where userid = '"+str(current_login['userid'])+"';")
             conn.commit()
             return redirect(url_for('home'))
         else:
@@ -122,12 +131,45 @@ def buttonhandler(form, userid = None, tweetid=None, tweet=None):
             current_login['username'] = username
             db.execute('drop view if exists followers;')
             conn.commit()
+            db.execute('drop view if exists userlikes;')
+            conn.commit()
             db.execute("create view followers as select fr, fe from network where fr = "+str(current_login["userid"])+";")
+            conn.commit()
+            db.execute("create view userlikes as select tweetid, userid from likes where userid = '"+str(current_login['userid'])+"';")
             conn.commit()
             return redirect(url_for('home'))
     
     elif 'profilebutton' in form:
         return redirect(url_for('userpage', userid=current_login["userid"]))
+    
+    elif 'likebutton' in form:
+        if current_login["userid"] == 'undef':
+            return redirect(url_for('login', wrongcreds=0))
+        else:
+            db.execute("insert into userlikes values("+str(form['likebutton'])+","+str(current_login["userid"])+");")
+            conn.commit()
+            db.execute("update like_nums set like_num = like_num + 1 where tweetid = "+str(form['likebutton'])+";")
+            conn.commit()
+            if calledfrom == 'home':
+                return redirect(url_for('home'))
+            elif calledfrom == 'userpage':
+                return redirect(url_for('userpage', userid=userid))
+            elif calledfrom == 'tweetpage':
+                return redirect(url_for('tweetpage', tweetid=tweetid))
+    
+    elif 'likedbutton' in form:
+        db.execute("delete from userlikes where tweetid = "+str(form['likedbutton'])+" and userid = "+str(current_login["userid"])+";")
+        conn.commit()
+        db.execute("update like_nums set like_num = like_num - 1 where tweetid = "+str(form['likedbutton'])+";")
+        conn.commit()
+        if calledfrom == 'home':
+            return redirect(url_for('home'))
+        elif calledfrom == 'userpage':
+            return redirect(url_for('userpage', userid=userid))
+        elif calledfrom == 'tweetpage':
+            return redirect(url_for('tweetpage', tweetid=tweetid))
+            
+
 
 
 @app.route('/', methods=["POST", "GET"])
@@ -137,12 +179,12 @@ def home():
     extra = [[]]
     recm = [[]]
     if current_login["userid"] == "undef":
-        db.execute("select u.username, t.tweet, t.tweettime, u.userid, t.tweetid from tweets t, users u where u.userid = t.userid order by tweettime desc fetch first 200 rows only;")
+        db.execute("select u.username, t.tweet, t.tweettime, u.userid, t.tweetid, l.like_num from tweets t, users u, like_nums l where u.userid = t.userid and t.tweetid = l.tweetid order by tweettime desc fetch first 200 rows only;")
         posts = db.fetchall()
         db.execute("select username, userid from users order by random() fetch first 200 rows only;")
         users = db.fetchall()
     else:
-        db.execute("select u.username, t.tweet, t.tweettime, u.userid, t.tweetid from tweets t, users u where u.userid = t.userid and u.userid = "+str(current_login["userid"])+" union select u.username, t.tweet, t.tweettime, u.userid, t.tweetid from tweets t, users u, followers f where u.userid = t.userid and f.fe = u.userid order by tweettime desc fetch first 200 rows only;")
+        db.execute("select u.username, t.tweet, t.tweettime, u.userid, t.tweetid, l.like_num, case when t.tweetid = any(select tweetid from userlikes) then 'TRUE' else 'FALSE' end as userliked from tweets t, users u, like_nums l where u.userid = t.userid and t.tweetid = l.tweetid and u.userid = "+str(current_login["userid"])+" union select u.username, t.tweet, t.tweettime, u.userid, t.tweetid, l.like_num, case when t.tweetid = any(select tweetid from userlikes) then 'TRUE' else 'FALSE' end as userliked from tweets t, users u, followers f, like_nums l where u.userid = t.userid and f.fe = u.userid and t.tweetid = l.tweetid order by tweettime desc fetch first 200 rows only;")
         posts = db.fetchall()
         db.execute("select username, u.userid from users u, followers f where f.fe = u.userid fetch first 200 rows only;")
         users = db.fetchall()
@@ -153,7 +195,7 @@ def home():
         if len(recm) == 0:
             recm = extra
     if request.method == "POST":
-        rval = buttonhandler(request.form)
+        rval = buttonhandler(request.form, calledfrom='home')
         if rval!=None:
             return rval
     return render_template("index.html", posts=posts, users=users, loginuser=[current_login["userid"],current_login["username"]], extra=extra, recm=recm)
@@ -211,14 +253,17 @@ def logout():
 
 @app.route('/tweet/<int:tweetid>', methods=["POST", "GET"])
 def tweetpage(tweetid):
-    db.execute("select u.userid, u.username, t.tweetid, t.tweet, t.tweettime, t.in_response_to_tweet, t.response_tweets from tweets t, users u where u.userid = t.userid and t.tweetid = "+str(tweetid)+";")
+    if current_login["userid"] == 'undef':
+        db.execute("select u.userid, u.username, t.tweetid, t.tweet, t.tweettime, t.in_response_to_tweet, t.response_tweets, l.like_num from tweets t, users u, like_nums l where u.userid = t.userid and t.tweetid = "+str(tweetid)+" and t.tweetid = l.tweetid;")
+    else:
+        db.execute("select u.userid, u.username, t.tweetid, t.tweet, t.tweettime, t.in_response_to_tweet, t.response_tweets, l.like_num, case when t.tweetid = any(select tweetid from userlikes) then 'TRUE' else 'FALSE' end as userliked from tweets t, users u, like_nums l where u.userid = t.userid and t.tweetid = l.tweetid and t.tweetid = "+str(tweetid)+"; ")
     tweet = db.fetchall()[0]
     posts=[]
     if((tweet[6]) != None and len(tweet[6])>0):
         db.execute("select u.username, t.tweet, t.tweettime, u.userid, t.tweetid from tweets t, users u where u.userid = t.userid and t.tweetid = any(array"+str(tweet[6])+") order by tweettime desc fetch first 200 rows only;")
         posts=db.fetchall()
     if request.method == "POST":
-        rval = buttonhandler(request.form, tweetid=tweetid, tweet=tweet)
+        rval = buttonhandler(request.form, tweetid=tweetid, tweet=tweet, calledfrom='tweetpage')
         if rval != None:
             return rval
     inrespto = []
