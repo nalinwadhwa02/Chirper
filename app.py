@@ -68,8 +68,11 @@ def buttonhandler(form, userid = None, tweetid=None, tweet=None):
                 +str(current_login["userid"])+", '"
                 +form.get('addresponse')+"', '"
                 +get_curr_timestamp()+"', array[]::integer[], array["+str(tweet[2])+"]) returning tweetid;")
+            newtweetid = db.fetchall()
             conn.commit()
-            return redirect(url_for('userpage', userid=userid))
+            db.execute("update tweets set response_tweets = response_tweets || "+str(newtweetid[0][0])+" where tweetid = "+str(tweet[2])+";")
+            conn.commit()
+            return redirect(url_for('tweetpage', tweetid=tweetid))
     
     elif 'login' in form:
         return redirect(url_for('login', wrongcreds=False))
