@@ -10,14 +10,14 @@ app = Flask(__name__)
 
 
 conn = psycopg2.connect(
-    # host="10.17.50.36",
-    # database="group_35",
-    # user="group_35",
-    # password="VxGj6gCyWTKyM"
-    host = "localhost",
-    database = "postgres",
-    user = "postgres",
-    password = "postgres"
+    host="10.17.50.36",
+    database="group_35",
+    user="group_35",
+    password="VxGj6gCyWTKyM"
+    # host = "localhost",
+    # database = "postgres",
+    # user = "postgres",
+    # password = "postgres"
 )
 
 db = conn.cursor()
@@ -53,7 +53,6 @@ def buttonhandler(form, userid = None, tweetid=None, tweet=None, calledfrom=None
             return redirect(url_for('home'))
 
     elif 'searchbutton' in form and len(form['search'])>0:
-        print("searching")
         return redirect(url_for('search', searchquery=form.get('search')))
 
     elif 'followbutton' in form:
@@ -100,7 +99,6 @@ def buttonhandler(form, userid = None, tweetid=None, tweet=None, calledfrom=None
         password = form['password']
         db.execute("select userid from users where username = '"+str(username)+"' and password = '"+str(password)+"';")
         res = db.fetchall()
-        print(res, username, password)
         if len(res) == 1 :
             current_login['userid'] = res[0][0]
             current_login['username'] = username
@@ -122,7 +120,6 @@ def buttonhandler(form, userid = None, tweetid=None, tweet=None, calledfrom=None
         password = form['password']
         db.execute("select userid from users where username = '"+str(username)+"';")
         res = db.fetchall()
-        print(res, username, password)
         if len(res) == 0 :
             db.execute("insert into users(username, password) values('"+str(username)+"', '"+str(password)+"') returning userid;")
             res = db.fetchall()
@@ -234,7 +231,6 @@ def userpage(userid):
     if(current_login["userid"] != 'undef'):
         db.execute("select fr,fe from followers where fe = "+str(userid)+";")
         nid = db.fetchall()
-        print(nid)
         if(len(nid)>0):
             isfollowing = True
     if request.method == "POST":
