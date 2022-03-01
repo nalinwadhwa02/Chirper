@@ -186,7 +186,7 @@ def login(wrongcreds):
 def userpage(userid):
     db.execute("select username from users where userid = "+str(userid)+";")
     username=db.fetchall()[0][0]
-    db.execute("select u.username, t.tweet, t.tweettime, t.tweetid from tweets t, users u where u.userid = t.userid and u.userid = "+str(userid)+" order by tweettime desc;")
+    db.execute("select u.username, t.tweet, t.tweettime, t.tweetid from tweets t, users u where u.userid = t.userid and u.userid = "+str(userid)+" order by tweettime desc fetch first 200 rows only;")
     tweets=db.fetchall()
     isfollowing = False
     if(current_login["userid"] != 'undef'):
