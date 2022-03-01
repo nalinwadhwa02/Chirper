@@ -139,14 +139,14 @@ def home():
     if current_login["userid"] == "undef":
         db.execute("select u.username, t.tweet, t.tweettime, u.userid, t.tweetid from tweets t, users u where u.userid = t.userid order by tweettime desc fetch first 200 rows only;")
         posts = db.fetchall()
-        db.execute("select username, userid from users fetch first 200 rows only;")
+        db.execute("select username, userid from users order by random() fetch first 200 rows only;")
         users = db.fetchall()
     else:
         db.execute("select u.username, t.tweet, t.tweettime, u.userid, t.tweetid from tweets t, users u where u.userid = t.userid and u.userid = "+str(current_login["userid"])+" union select u.username, t.tweet, t.tweettime, u.userid, t.tweetid from tweets t, users u, followers f where u.userid = t.userid and f.fe = u.userid order by tweettime desc fetch first 200 rows only;")
         posts = db.fetchall()
         db.execute("select username, u.userid from users u, followers f where f.fe = u.userid fetch first 200 rows only;")
         users = db.fetchall()
-        db.execute("select u.userid, username from users u, (select userid from users where not userid = "+str(current_login["userid"])+"  except select fe as userid from followers) as diff where diff.userid = u.userid fetch first 200 rows only;")
+        db.execute("select u.userid, username from users u, (select userid from users where not userid = "+str(current_login["userid"])+"  except select fe as userid from followers) as diff where diff.userid = u.userid order by random() fetch first 200 rows only;")
         extra = db.fetchall()
         db.execute("with recm as ((select fe from network where fr = any (select fe from followers) union select fr from network where fe = any (select fe from followers)) except select fe from followers) select userid, username from recm, users where fe = userid and not userid = "+str(current_login["userid"])+";")
         recm = db.fetchall()
@@ -221,4 +221,8 @@ def tweetpage(tweetid):
         rval = buttonhandler(request.form, tweetid=tweetid, tweet=tweet)
         if rval != None:
             return rval
-    return render_template("tweet.html", tweet=tweet, loginuser=[current_login["userid"],current_login["username"]], posts=posts)
+    inrespto = []
+    if(tweet[5] != None and len(tweet[5])==1):
+        db.execute("select u.username, t.tweet, t.tweettime, u.userid, t.tweetid from tweets t, users u where u.userid = t.userid and t.tweetid = "+str(tweet[5][0])+";")
+        inrespto = db.fetchall()[0]
+    return render_template("tweet.html", tweet=tweet, loginuser=[current_login["userid"],current_login["username"]], posts=posts, inrespto=inrespto)
