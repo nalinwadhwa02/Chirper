@@ -58,7 +58,7 @@ def buttonhandler(form, userid = None, tweetid=None, tweet=None):
             conn.commit()
             return redirect(url_for('userpage', userid=userid))
         else:
-            return redirect(url_for('login', wrongcreds=False))
+            return redirect(url_for('login', wrongcreds=0))
     
     elif 'followingbutton' in form:
         if current_login["userid"] != 'undef':
@@ -66,7 +66,7 @@ def buttonhandler(form, userid = None, tweetid=None, tweet=None):
             conn.commit()
             return redirect(url_for('userpage', userid=userid))
         else:
-            return redirect(url_for('login', wrongcreds=False))
+            return redirect(url_for('login', wrongcreds=0))
 
 
     elif 'responsebutton' in form and len(form.get('addresponse'))>0:
@@ -84,7 +84,7 @@ def buttonhandler(form, userid = None, tweetid=None, tweet=None):
             return redirect(url_for('tweetpage', tweetid=tweetid))
     
     elif 'login' in form:
-        return redirect(url_for('login', wrongcreds=False))
+        return redirect(url_for('login', wrongcreds=0))
 
     elif 'logout' in form:
         logout()
@@ -105,7 +105,7 @@ def buttonhandler(form, userid = None, tweetid=None, tweet=None):
             conn.commit()
             return redirect(url_for('home'))
         else:
-            return redirect(url_for('login', wrongcreds=True))
+            return redirect(url_for('login', wrongcreds=1))
 
 
     elif 'signupbutton' in form:
@@ -172,14 +172,14 @@ def search(searchquery):
     return render_template("search.html", results=tweetresults, userresults=userresults, searchquery=searchquery, loginuser=[current_login["userid"],current_login["username"]])
 
 
-@app.route("/login/<string:wrongcreds>", methods=["POST", "GET"])
+@app.route("/login/<int:wrongcreds>", methods=["POST", "GET"])
 def login(wrongcreds):
-    print(wrongcreds)
+    wds = "true" if wrongcreds == 1 else "false"
     if request.method == "POST":
         rval = buttonhandler(request.form)
         if rval != None:
             return rval
-    return render_template("login.html", loginuser=[current_login["userid"],current_login["username"]], wrongcreds=wrongcreds)
+    return render_template("login.html", wrongcreds=wds)
 
 
 @app.route('/user/<int:userid>', methods=["POST", "GET"])

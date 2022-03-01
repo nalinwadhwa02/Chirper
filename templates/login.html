@@ -24,9 +24,11 @@
                 <button type="submit" class="btn btn-primary m-1 p-1" name="loginbutton" value="pressed"> Login </button>
                 <button type="submit" class="btn btn-primary m-1 p-1" name="signupbutton" value="pressed"> Sign Up </button>
             </form>
+            {% if wrongcreds == "true" %}
             <div class="alert alert-danger" role="alert">
-                A simple danger alert—check it out!
+                Wrong Credentials Entered
             </div>
+            {% endif %}
         </div>
     </div>
 </body>

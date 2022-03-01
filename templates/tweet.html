@@ -33,6 +33,7 @@
         <div class="d-flex flex-md-row gap-3 justify-content-center">
             <div class="col-12 align-items-center">
                 <div class="card mt-2 mb-2 p-2 text-center border rounded-3">
+                    {% if inrespto|length > 0 %}
                     <div class="p-2 text-start fs-4">In Response to</div>
                     <div class="card mt-2 mb-3 p-2 text-center border rounded-3">
                         <a class="stretched-link" href="/tweet/{{inrespto[4]}}"></a>
@@ -44,6 +45,7 @@
                             {{inrespto[1]}}
                         </div>
                     </div>
+                    {% endif %}
                     <div class="d-flex flex-column flex-md-row mt-1 ms-1 me-1 border-bottom align-items-center">
                         <p class="d-flex text-start fs-3"><button type="button" onclick="location.href='/user/{{tweet[0]}}'" class="btn btn-link fs-2">{{tweet[1]}}</button></p>
                         <p class="col text-end fs-4">{{tweet[4]}}</p>
