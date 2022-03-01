@@ -10,14 +10,14 @@ app = Flask(__name__)
 
 
 conn = psycopg2.connect(
-    # host="10.17.50.36",
-    # database="group_35",
-    # user="group_35",
-    # password="VxGj6gCyWTKyM"
-    host = "localhost",
-    database = "postgres",
-    user = "postgres",
-    password = "postgres"
+    host="10.17.50.36",
+    database="group_35",
+    user="group_35",
+    password="VxGj6gCyWTKyM"
+    # host = "localhost",
+    # database = "postgres",
+    # user = "postgres",
+    # password = "postgres"
 )
 
 db = conn.cursor()
