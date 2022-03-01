@@ -53,6 +53,15 @@
                     <div class="container text-start m-2 fs-4 pb-2 mb-2">
                         {{tweet[3]}}
                     </div>
+                    <form class="input-group text-start m-2" method="POST">
+                        {% if loginuser[0] == 'undef' %}
+                        <button type="submit" class="btn btn-outline-primary" name="likebutton" value="{{tweet[2]}}">likes {{tweet[7]}}</button>
+                        {% elif tweet[8] == 'TRUE' %}
+                        <button type="submit" class="btn btn-primary" name="likedbutton" value="{{tweet[2]}}">likes {{tweet[7]}}</button>
+                        {% else %}
+                        <button type="submit" class="btn btn-outline-primary" name="likebutton" value="{{tweet[2]}}">likes {{tweet[7]}}</button>
+                        {% endif %}
+                    </form>
                     <div class="card mt-2 mb-2 p-3 text-center border rounded-3">
                         <form class="input-group" method="POST">
                             <input type="text" class="form-control" placeholder="Add Response" name="addresponse" id="addresponse">

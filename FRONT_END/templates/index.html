@@ -48,6 +48,15 @@
                     <div class="container text-start m-2">
                         {{post[1]}}
                     </div>
+                    <form class="input-group text-start m-2" method="POST">
+                        {% if loginuser[0] == 'undef' %}
+                        <button type="submit" class="btn btn-outline-primary" name="likebutton" value="{{post[4]}}">likes {{post[5]}}</button>
+                        {% elif post[6] == 'TRUE' %}
+                        <button type="submit" class="btn btn-primary" name="likedbutton" value="{{post[4]}}">likes {{post[5]}}</button>
+                        {% else %}
+                        <button type="submit" class="btn btn-outline-primary" name="likebutton" value="{{post[4]}}">likes {{post[5]}}</button>
+                        {% endif %}
+                    </form>
                 </div>
                 {% endfor %}
             </div>
