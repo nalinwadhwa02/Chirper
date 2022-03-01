@@ -161,9 +161,9 @@ def home():
 
 @app.route("/search/<string:searchquery>", methods=["POST", "GET"])
 def search(searchquery):
-    db.execute("select u.userid, t.tweetid, u.username, t.tweet, t.tweettime from tweets t, users u where u.userid = t.userid and tweet like '%"+searchquery+"%' order by tweettime desc fetch first 200 rows only;")
+    db.execute("select u.userid, t.tweetid, u.username, t.tweet, t.tweettime from tweets t, users u where u.userid = t.userid and lower(tweet) like lower('%"+searchquery+"%') order by tweettime desc fetch first 200 rows only;")
     tweetresults = db.fetchall()
-    db.execute("select userid, username from users where username like '%"+searchquery+"%' fetch first 200 rows only;")
+    db.execute("select userid, username from users where lower(username) like lower('%"+searchquery+"%') fetch first 200 rows only;")
     userresults = db.fetchall()
     if request.method == "POST":
         rval = buttonhandler(request.form)
