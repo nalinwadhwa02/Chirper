@@ -59,6 +59,15 @@ def buttonhandler(form, userid = None, tweetid=None, tweet=None):
             return redirect(url_for('userpage', userid=userid))
         else:
             return redirect(url_for('login', wrongcreds=False))
+    
+    elif 'followingbutton' in form:
+        if current_login["userid"] != 'undef':
+            db.execute("delete from followers where fr="+str(current_login["userid"])+" and fe="+str(userid)+";")
+            conn.commit()
+            return redirect(url_for('userpage', userid=userid))
+        else:
+            return redirect(url_for('login', wrongcreds=False))
+
 
     elif 'responsebutton' in form and len(form.get('addresponse'))>0:
         if(current_login["userid"] == 'undef'):
@@ -126,6 +135,7 @@ def home():
     posts = [[]]
     users = [[]]
     extra = [[]]
+    recm = [[]]
     if current_login["userid"] == "undef":
         db.execute("select u.username, t.tweet, t.tweettime, u.userid, t.tweetid from tweets t, users u where u.userid = t.userid order by tweettime desc fetch first 200 rows only;")
         posts = db.fetchall()
@@ -136,13 +146,17 @@ def home():
         posts = db.fetchall()
         db.execute("select username, u.userid from users u, followers f where f.fe = u.userid fetch first 200 rows only;")
         users = db.fetchall()
-        db.execute("select username, u.userid from users u, (select userid from users where not userid = "+str(current_login["userid"])+"  except select fe as userid from followers) as diff where diff.userid = u.userid fetch first 200 rows only;")
+        db.execute("select u.userid, username from users u, (select userid from users where not userid = "+str(current_login["userid"])+"  except select fe as userid from followers) as diff where diff.userid = u.userid fetch first 200 rows only;")
         extra = db.fetchall()
+        db.execute("with recm as ((select fe from network where fr = any (select fe from followers) union select fr from network where fe = any (select fe from followers)) except select fe from followers) select userid, username from recm, users where fe = userid and not userid = "+str(current_login["userid"])+";")
+        recm = db.fetchall()
+        if len(recm) == 0:
+            recm = extra
     if request.method == "POST":
         rval = buttonhandler(request.form)
         if rval!=None:
             return rval
-    return render_template("index.html", posts=posts, users=users, loginuser=[current_login["userid"],current_login["username"]], extra=extra)
+    return render_template("index.html", posts=posts, users=users, loginuser=[current_login["userid"],current_login["username"]], extra=extra, recm=recm)
 
 
 @app.route("/search/<string:searchquery>", methods=["POST", "GET"])

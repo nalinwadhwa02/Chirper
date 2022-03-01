@@ -64,9 +64,9 @@
                 </div>
                 {% if loginuser[0] != 'undef' %}
                 <div class="card mb-2 p-3 text-center border rounded-3">
-                    <h4 class="text-start mb-2">Users</h4>
-                        {% for user in extra %}
-                            <p class="m-1 text-start"><a href="/user/{{user[1]}}">{{user[0]}}</a></p>
+                    <h4 class="text-start mb-2">Suggestions</h4>
+                        {% for user in recm %}
+                            <p class="m-1 text-start"><a href="/user/{{user[0]}}">{{user[1]}}</a></p>
                         {% endfor %}
                 </div>
                 {% endif %}
