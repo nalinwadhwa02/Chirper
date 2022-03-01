@@ -27,12 +27,6 @@ current_login = {
     "userid":"undef"
 }
 
-db.execute("select setval('users_userid_seq',(select max(userid) from users));")
-db.execute("select setval('tweets_tweetid_seq',(select max(tweetid) from tweets));")
-db.execute("drop table if exists like_nums")
-db.execute("create table like_nums as select t.tweetid, count(l.tweetid) as like_num from likes l right join tweets t on t.tweetid = l.tweetid group by t.tweetid;")
-conn.commit()
-
 def get_curr_timestamp():
     ts = datetime.datetime.now()
     return str(ts.year)+"-"+str(ts.month)+"-"+str(ts.day)+" "+str(ts.hour)+":"+str(ts.minute)+":"+str(ts.second)
