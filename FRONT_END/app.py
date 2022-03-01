@@ -10,14 +10,14 @@ app = Flask(__name__)
 
 
 conn = psycopg2.connect(
-    host="10.17.50.36",
-    database="group_35",
-    user="group_35",
-    password="VxGj6gCyWTKyM"
-    # host = "localhost",
-    # database = "postgres",
-    # user = "postgres",
-    # password = "postgres"
+    # host="10.17.50.36",
+    # database="group_35",
+    # user="group_35",
+    # password="VxGj6gCyWTKyM"
+    host = "localhost",
+    database = "postgres",
+    user = "postgres",
+    password = "postgres"
 )
 
 db = conn.cursor()
@@ -129,6 +129,8 @@ def buttonhandler(form, userid = None, tweetid=None, tweet=None, calledfrom=None
             db.execute("create view userlikes as select tweetid, userid from likes where userid = '"+str(current_login['userid'])+"';")
             conn.commit()
             return redirect(url_for('home'))
+        else:
+            return redirect(url_for('login', wrongcreds=2))
     
     elif 'profilebutton' in form:
         return redirect(url_for('userpage', userid=current_login["userid"]))
@@ -207,12 +209,16 @@ def search(searchquery):
 
 @app.route("/login/<int:wrongcreds>", methods=["POST", "GET"])
 def login(wrongcreds):
-    wds = "true" if wrongcreds == 1 else "false"
+    wd = "false"
+    if wrongcreds == 1:
+        wd = "Username or password is invalid"
+    elif wrongcreds == 2:
+        wd = "A user with same username already exists"
     if request.method == "POST":
         rval = buttonhandler(request.form)
         if rval != None:
             return rval
-    return render_template("login.html", wrongcreds=wds)
+    return render_template("login.html", wrongcreds=wd)
 
 
 @app.route('/user/<int:userid>', methods=["POST", "GET"])

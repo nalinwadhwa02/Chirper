@@ -24,9 +24,9 @@
                 <button type="submit" class="btn btn-primary m-1 p-1" name="loginbutton" value="pressed"> Login </button>
                 <button type="submit" class="btn btn-primary m-1 p-1" name="signupbutton" value="pressed"> Sign Up </button>
             </form>
-            {% if wrongcreds == "true" %}
-            <div class="alert alert-danger" role="alert">
-                Wrong Credentials Entered
+            {% if wrongcreds != "false" %}
+            <div class="alert alert-danger text-center" role="alert">
+                {{wrongcreds}}
             </div>
             {% endif %}
         </div>
