@@ -1,4 +1,3 @@
-from imp import reload
 from flask import Flask, redirect, url_for
 from flask import render_template, request
 import psycopg2
