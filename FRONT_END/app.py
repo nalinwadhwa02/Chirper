@@ -10,14 +10,14 @@ app = Flask(__name__)
 
 
 conn = psycopg2.connect(
-    host="10.17.50.36",
-    database="group_35",
-    user="group_35",
-    password="VxGj6gCyWTKyM"
-    # host = "localhost",
-    # database = "postgres",
-    # user = "postgres",
-    # password = "postgres"
+    # host="10.17.50.36",
+    # database="group_35",
+    # user="group_35",
+    # password="VxGj6gCyWTKyM"
+    host = "localhost",
+    database = "postgres",
+    user = "postgres",
+    password = "postgres"
 )
 
 db = conn.cursor()
@@ -183,7 +183,7 @@ def home():
         users = db.fetchall()
         db.execute("select u.userid, username from users u, (select userid from users where not userid = "+str(current_login["userid"])+"  except select fe as userid from followers) as diff where diff.userid = u.userid order by random() fetch first 200 rows only;")
         extra = db.fetchall()
-        db.execute("with recm as ((select fe from network where fr = any (select fe from followers) union select fr from network where fe = any (select fe from followers)) except select fe from followers) select userid, username from recm, users where fe = userid and not userid = "+str(current_login["userid"])+";")
+        db.execute("with recm as ((select fe from network where fr = any (select fe from followers) union select fr from network where fe = any (select fe from followers)) except select fe from followers) select userid, username from recm, users where fe = userid and not userid = "+str(current_login["userid"])+" fetch first 200 rows only;")
         recm = db.fetchall()
         if len(recm) == 0:
             recm = extra
